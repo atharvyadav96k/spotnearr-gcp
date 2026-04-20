@@ -7,3 +7,7 @@ const (
 	PlanTierProfessional Plan = "PRO"
 	PlanTierPremium      Plan = "PRM"
 )
+
+func (p Plan) IsValid() bool {
+	return p == PlanTierNone || p == PlanTierPremium || p == PlanTierProfessional
+}
