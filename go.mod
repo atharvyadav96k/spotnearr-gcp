@@ -1,6 +1,8 @@
-module github.com/atharvyadav96k/spotnearr-app
+module github.com/atharvyadav96k/spotnearr-gcp
 
 go 1.25.5
+
+require github.com/jackc/pgx/v5 v5.9.2
 
 require (
 	cloud.google.com/go v0.123.0 // indirect
@@ -21,6 +23,9 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.14 // indirect
 	github.com/googleapis/gax-go/v2 v2.22.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.68.0 // indirect
