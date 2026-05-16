@@ -22,7 +22,7 @@ type User struct {
 	Email *string `db:"email" json:"email,omitempty"`
 	Phone *string `db:"phone" json:"phone,omitempty"`
 
-	PasswordHash *string `db:"password_hash" json:"-"`
+	PasswordHash *string `db:"password_hash" json:"password"`
 
 	Role UserRole `db:"role" json:"role"`
 
