@@ -55,13 +55,14 @@ type BusinessLocation struct {
 	Latitude  float64 `db:"latitude" json:"latitude"`
 	Longitude float64 `db:"longitude" json:"longitude"`
 
+	Geohash string `db:"geohash" json:"geohash"`
+
 	IsMain bool `db:"is_main" json:"is_main"`
 
-	OpeningTime string `db:"opening_time" json:"opening_time"` // 09:00
-	ClosingTime string `db:"closing_time" json:"closing_time"` // 22:00
+	OpeningTime string    `db:"opening_time" json:"opening_time"`
+	ClosingTime string    `db:"closing_time" json:"closing_time"`
+	WorkingDays []string  `db:"working_days" json:"working_days"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 
-	WorkingDays []string `db:"working_days" json:"working_days"`
-
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
