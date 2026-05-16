@@ -6,9 +6,9 @@ import (
 	"github.com/atharvyadav96k/spotnearr-gcp/app/database/models"
 )
 
-func (a *App) RegisterUser(fullName string, email *string, phone *string, passwordHash *string, role string) error {
+func (a *App) RegisterUser(user models.User) error {
 	query := `INSERT INTO users (full_name, email, phone, password_hash, role) VALUES ($1, $2, $3, $4, $5)`
-	_, err := a.GetDB().Exec(context.Background(), query, fullName, email, phone, passwordHash, role)
+	_, err := a.GetDB().Exec(context.Background(), query, user.FullName, user.Email, user.Phone, user.PasswordHash, user.Role)
 	return err
 }
 
