@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/atharvyadav96k/spotnearr-gcp/app/database/models"
 	"github.com/google/uuid"
@@ -136,9 +135,8 @@ func (a *App) GetProductInventoryByID(id uuid.UUID) (*models.ProductInventory, e
 
 	return &inventory, nil
 }
-
-func (a *App) GetProductInventoriesByBusinessID(businessID uuid.UUID) ([]map[string]interface{}, error) {
-	query := `SELECT pi.id, pi.product_id, pi.location_id, pi.price, pi.discounted_price, pi.stock, pi.is_available, pi.created_at, pi.updated_at, p.name, p.description, p.unit, bl.branch_name FROM product_inventory pi JOIN products p ON p.id = pi.product_id JOIN business_locations bl ON bl.id = pi.location_id WHERE bl.business_id = $1 ORDER BY pi.created_at DESC`
+func (a *App) GetProductInventoriesByBusinessID(businessID uuid.UUID) ([]models.ProductInventory, error) {
+	query := `SELECT pi.id, pi.product_id, pi.location_id, pi.price, pi.discounted_price, pi.stock, pi.is_available, pi.created_at, pi.updated_at FROM product_inventory pi JOIN business_locations bl ON bl.id = pi.location_id WHERE bl.business_id = $1 ORDER BY pi.created_at DESC`
 
 	rows, err := a.GetDB().Query(context.Background(), query, businessID)
 	if err != nil {
@@ -146,46 +144,28 @@ func (a *App) GetProductInventoriesByBusinessID(businessID uuid.UUID) ([]map[str
 	}
 	defer rows.Close()
 
-	var inventories []map[string]interface{}
+	var inventories []models.ProductInventory
 
 	for rows.Next() {
-		var (
-			id              uuid.UUID
-			productID       uuid.UUID
-			locationID      uuid.UUID
-			price           int64
-			discountedPrice int64
-			stock           int
-			isAvailable     bool
-			createdAt       time.Time
-			updatedAt       time.Time
-			name            string
-			description     *string
-			unit            string
-			branchName      string
-		)
+		var inventory models.ProductInventory
 
-		err := rows.Scan(&id, &productID, &locationID, &price, &discountedPrice, &stock, &isAvailable, &createdAt, &updatedAt, &name, &description, &unit, &branchName)
+		err := rows.Scan(
+			&inventory.ID,
+			&inventory.ProductID,
+			&inventory.LocationID,
+			&inventory.Price,
+			&inventory.DiscountedPrice,
+			&inventory.Stock,
+			&inventory.IsAvailable,
+			&inventory.CreatedAt,
+			&inventory.UpdatedAt,
+		)
 
 		if err != nil {
 			return nil, err
 		}
 
-		inventories = append(inventories, map[string]interface{}{
-			"id":               id,
-			"product_id":       productID,
-			"location_id":      locationID,
-			"price":            price,
-			"discounted_price": discountedPrice,
-			"stock":            stock,
-			"is_available":     isAvailable,
-			"created_at":       createdAt,
-			"updated_at":       updatedAt,
-			"product_name":     name,
-			"description":      description,
-			"unit":             unit,
-			"branch_name":      branchName,
-		})
+		inventories = append(inventories, inventory)
 	}
 
 	return inventories, nil
@@ -210,11 +190,10 @@ func (a *App) AttachMediaToProduct(productMedia models.ProductMedia) error {
 
 	return err
 }
-
-func (a *App) GetNearbyProducts(latitude float64, longitude float64, density int) ([]map[string]interface{}, error) {
+func (a *App) GetNearbyProducts(latitude float64, longitude float64, density int) ([]models.ProductInventory, error) {
 	radius := float64(density * 3)
 
-	query := `SELECT p.id, p.name, p.description, p.unit, p.tags, pi.price, pi.discounted_price, pi.stock, bl.id, bl.branch_name, bl.latitude, bl.longitude, m.url, m.thumbnail_url, (6371 * acos(cos(radians($1)) * cos(radians(bl.latitude)) * cos(radians(bl.longitude) - radians($2)) + sin(radians($1)) * sin(radians(bl.latitude)))) AS distance FROM product_inventory pi JOIN products p ON p.id = pi.product_id JOIN business_locations bl ON bl.id = pi.location_id LEFT JOIN product_media pm ON pm.product_id = p.id AND pm.is_primary = true LEFT JOIN media m ON m.id = pm.media_id WHERE pi.stock > 0 AND pi.is_available = true AND p.is_active = true AND CURRENT_TIME BETWEEN bl.opening_time AND bl.closing_time AND LOWER(TRIM(TO_CHAR(CURRENT_DATE, 'Day'))) = ANY(bl.working_days) AND (6371 * acos(cos(radians($1)) * cos(radians(bl.latitude)) * cos(radians(bl.longitude) - radians($2)) + sin(radians($1)) * sin(radians(bl.latitude)))) <= $3 ORDER BY distance ASC`
+	query := `SELECT pi.id, pi.product_id, pi.location_id, pi.price, pi.discounted_price, pi.stock, pi.is_available, pi.created_at, pi.updated_at FROM product_inventory pi JOIN products p ON p.id = pi.product_id JOIN business_locations bl ON bl.id = pi.location_id WHERE pi.stock > 0 AND pi.is_available = true AND p.is_active = true AND CURRENT_TIME BETWEEN bl.opening_time AND bl.closing_time AND LOWER(TRIM(TO_CHAR(CURRENT_DATE, 'Day'))) = ANY(bl.working_days) AND (6371 * acos(cos(radians($1)) * cos(radians(bl.latitude)) * cos(radians(bl.longitude) - radians($2)) + sin(radians($1)) * sin(radians(bl.latitude)))) <= $3 ORDER BY (6371 * acos(cos(radians($1)) * cos(radians(bl.latitude)) * cos(radians(bl.longitude) - radians($2)) + sin(radians($1)) * sin(radians(bl.latitude)))) ASC`
 
 	rows, err := a.GetDB().Query(context.Background(), query, latitude, longitude, radius)
 	if err != nil {
@@ -222,50 +201,29 @@ func (a *App) GetNearbyProducts(latitude float64, longitude float64, density int
 	}
 	defer rows.Close()
 
-	var products []map[string]interface{}
+	var inventories []models.ProductInventory
 
 	for rows.Next() {
-		var (
-			productID       uuid.UUID
-			name            string
-			description     *string
-			unit            string
-			tags            []string
-			price           int64
-			discountedPrice int64
-			stock           int
-			locationID      uuid.UUID
-			branchName      string
-			lat             float64
-			lng             float64
-			imageURL        *string
-			thumbnailURL    *string
-			distance        float64
+		var inventory models.ProductInventory
+
+		err := rows.Scan(
+			&inventory.ID,
+			&inventory.ProductID,
+			&inventory.LocationID,
+			&inventory.Price,
+			&inventory.DiscountedPrice,
+			&inventory.Stock,
+			&inventory.IsAvailable,
+			&inventory.CreatedAt,
+			&inventory.UpdatedAt,
 		)
 
-		err := rows.Scan(&productID, &name, &description, &unit, &tags, &price, &discountedPrice, &stock, &locationID, &branchName, &lat, &lng, &imageURL, &thumbnailURL, &distance)
 		if err != nil {
 			return nil, err
 		}
 
-		products = append(products, map[string]interface{}{
-			"product_id":       productID,
-			"name":             name,
-			"description":      description,
-			"unit":             unit,
-			"tags":             tags,
-			"price":            price,
-			"discounted_price": discountedPrice,
-			"stock":            stock,
-			"location_id":      locationID,
-			"branch_name":      branchName,
-			"latitude":         lat,
-			"longitude":        lng,
-			"image_url":        imageURL,
-			"thumbnail_url":    thumbnailURL,
-			"distance_km":      distance,
-		})
+		inventories = append(inventories, inventory)
 	}
 
-	return products, nil
+	return inventories, nil
 }
