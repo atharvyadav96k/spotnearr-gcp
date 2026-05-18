@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/atharvyadav96k/spotnearr-gcp/app/database/models"
 	"github.com/google/uuid"
@@ -100,6 +101,94 @@ func (a *App) CreateProductInventories(inventories []models.ProductInventory) er
 	_, err := a.GetDB().Exec(context.Background(), query, args...)
 
 	return err
+}
+
+func (a *App) UpdateProductInventory(inventory models.ProductInventory) (*models.ProductInventory, error) {
+	query := `UPDATE product_inventory SET product_id = $1, location_id = $2, price = $3, discounted_price = $4, stock = $5, is_available = $6, updated_at = NOW() WHERE id = $7 RETURNING updated_at`
+
+	err := a.GetDB().QueryRow(context.Background(), query, inventory.ProductID, inventory.LocationID, inventory.Price, inventory.DiscountedPrice, inventory.Stock, inventory.IsAvailable, inventory.ID).Scan(&inventory.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &inventory, nil
+}
+
+func (a *App) DeleteProductInventory(id uuid.UUID) error {
+	query := `DELETE FROM product_inventory WHERE id = $1`
+
+	_, err := a.GetDB().Exec(context.Background(), query, id)
+
+	return err
+}
+
+func (a *App) GetProductInventoryByID(id uuid.UUID) (*models.ProductInventory, error) {
+	query := `SELECT id, product_id, location_id, price, discounted_price, stock, is_available, created_at, updated_at FROM product_inventory WHERE id = $1`
+
+	var inventory models.ProductInventory
+
+	err := a.GetDB().QueryRow(context.Background(), query, id).Scan(&inventory.ID, &inventory.ProductID, &inventory.LocationID, &inventory.Price, &inventory.DiscountedPrice, &inventory.Stock, &inventory.IsAvailable, &inventory.CreatedAt, &inventory.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &inventory, nil
+}
+
+func (a *App) GetProductInventoriesByBusinessID(businessID uuid.UUID) ([]map[string]interface{}, error) {
+	query := `SELECT pi.id, pi.product_id, pi.location_id, pi.price, pi.discounted_price, pi.stock, pi.is_available, pi.created_at, pi.updated_at, p.name, p.description, p.unit, bl.branch_name FROM product_inventory pi JOIN products p ON p.id = pi.product_id JOIN business_locations bl ON bl.id = pi.location_id WHERE bl.business_id = $1 ORDER BY pi.created_at DESC`
+
+	rows, err := a.GetDB().Query(context.Background(), query, businessID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var inventories []map[string]interface{}
+
+	for rows.Next() {
+		var (
+			id              uuid.UUID
+			productID       uuid.UUID
+			locationID      uuid.UUID
+			price           int64
+			discountedPrice int64
+			stock           int
+			isAvailable     bool
+			createdAt       time.Time
+			updatedAt       time.Time
+			name            string
+			description     *string
+			unit            string
+			branchName      string
+		)
+
+		err := rows.Scan(&id, &productID, &locationID, &price, &discountedPrice, &stock, &isAvailable, &createdAt, &updatedAt, &name, &description, &unit, &branchName)
+
+		if err != nil {
+			return nil, err
+		}
+
+		inventories = append(inventories, map[string]interface{}{
+			"id":               id,
+			"product_id":       productID,
+			"location_id":      locationID,
+			"price":            price,
+			"discounted_price": discountedPrice,
+			"stock":            stock,
+			"is_available":     isAvailable,
+			"created_at":       createdAt,
+			"updated_at":       updatedAt,
+			"product_name":     name,
+			"description":      description,
+			"unit":             unit,
+			"branch_name":      branchName,
+		})
+	}
+
+	return inventories, nil
 }
 
 func (a *App) CreateMedia(media models.Media) (*models.Media, error) {
