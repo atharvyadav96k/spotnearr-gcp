@@ -21,6 +21,66 @@ func (a *App) CreateProduct(product models.Product) (*models.Product, error) {
 	return &product, nil
 }
 
+func (a *App) UpdateProduct(product models.Product) (*models.Product, error) {
+	query := `UPDATE products SET category_id = $1, name = $2, description = $3, unit = $4, is_available = $5, is_active = $6, tags = $7, updated_at = NOW() WHERE id = $8 RETURNING updated_at`
+
+	err := a.GetDB().QueryRow(context.Background(), query, product.CategoryID, product.Name, product.Description, product.Unit, product.IsAvailable, product.IsActive, product.Tags, product.ID).Scan(&product.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &product, nil
+}
+
+func (a *App) DeleteProduct(id uuid.UUID) error {
+	query := `DELETE FROM products WHERE id = $1`
+
+	_, err := a.GetDB().Exec(context.Background(), query, id)
+
+	return err
+}
+
+func (a *App) GetProductByID(id uuid.UUID) (*models.Product, error) {
+	query := `SELECT id, category_id, name, description, unit, is_available, is_active, tags, created_at, updated_at FROM products WHERE id = $1`
+
+	var product models.Product
+
+	err := a.GetDB().QueryRow(context.Background(), query, id).Scan(&product.ID, &product.CategoryID, &product.Name, &product.Description, &product.Unit, &product.IsAvailable, &product.IsActive, &product.Tags, &product.CreatedAt, &product.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &product, nil
+}
+
+func (a *App) GetProductsByBusinessID(businessID uuid.UUID) ([]models.Product, error) {
+	query := `SELECT DISTINCT p.id, p.category_id, p.name, p.description, p.unit, p.is_available, p.is_active, p.tags, p.created_at, p.updated_at FROM products p JOIN product_inventory pi ON pi.product_id = p.id JOIN business_locations bl ON bl.id = pi.location_id WHERE bl.business_id = $1 ORDER BY p.created_at DESC`
+
+	rows, err := a.GetDB().Query(context.Background(), query, businessID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var products []models.Product
+
+	for rows.Next() {
+		var product models.Product
+
+		err := rows.Scan(&product.ID, &product.CategoryID, &product.Name, &product.Description, &product.Unit, &product.IsAvailable, &product.IsActive, &product.Tags, &product.CreatedAt, &product.UpdatedAt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		products = append(products, product)
+	}
+
+	return products, nil
+}
+
 func (a *App) CreateProductInventories(inventories []models.ProductInventory) error {
 	query := `INSERT INTO product_inventory (product_id, location_id, price, discounted_price, stock, is_available) VALUES `
 
