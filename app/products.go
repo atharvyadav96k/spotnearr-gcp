@@ -190,10 +190,11 @@ func (a *App) AttachMediaToProduct(productMedia models.ProductMedia) error {
 
 	return err
 }
-func (a *App) GetNearbyProducts(latitude float64, longitude float64, density int) ([]models.ProductInventory, error) {
+
+func (a *App) GetNearbyProducts(latitude float64, longitude float64, density int) ([]models.Product, error) {
 	radius := float64(density * 3)
 
-	query := `SELECT pi.id, pi.product_id, pi.location_id, pi.price, pi.discounted_price, pi.stock, pi.is_available, pi.created_at, pi.updated_at FROM product_inventory pi JOIN products p ON p.id = pi.product_id JOIN business_locations bl ON bl.id = pi.location_id WHERE pi.stock > 0 AND pi.is_available = true AND p.is_active = true AND CURRENT_TIME BETWEEN bl.opening_time AND bl.closing_time AND LOWER(TRIM(TO_CHAR(CURRENT_DATE, 'Day'))) = ANY(bl.working_days) AND (6371 * acos(cos(radians($1)) * cos(radians(bl.latitude)) * cos(radians(bl.longitude) - radians($2)) + sin(radians($1)) * sin(radians(bl.latitude)))) <= $3 ORDER BY (6371 * acos(cos(radians($1)) * cos(radians(bl.latitude)) * cos(radians(bl.longitude) - radians($2)) + sin(radians($1)) * sin(radians(bl.latitude)))) ASC`
+	query := `SELECT DISTINCT p.id, p.category_id, p.name, p.description, p.unit, p.is_available, p.is_active, p.tags, p.created_at, p.updated_at FROM product_inventory pi JOIN products p ON p.id = pi.product_id JOIN business_locations bl ON bl.id = pi.location_id WHERE pi.stock > 0 AND pi.is_available = true AND p.is_active = true AND CURRENT_TIME BETWEEN bl.opening_time AND bl.closing_time AND LOWER(TRIM(TO_CHAR(CURRENT_DATE, 'Day'))) = ANY(bl.working_days) AND (6371 * acos(cos(radians($1)) * cos(radians(bl.latitude)) * cos(radians(bl.longitude) - radians($2)) + sin(radians($1)) * sin(radians(bl.latitude)))) <= $3 ORDER BY p.created_at DESC`
 
 	rows, err := a.GetDB().Query(context.Background(), query, latitude, longitude, radius)
 	if err != nil {
@@ -201,29 +202,30 @@ func (a *App) GetNearbyProducts(latitude float64, longitude float64, density int
 	}
 	defer rows.Close()
 
-	var inventories []models.ProductInventory
+	var products []models.Product
 
 	for rows.Next() {
-		var inventory models.ProductInventory
+		var product models.Product
 
 		err := rows.Scan(
-			&inventory.ID,
-			&inventory.ProductID,
-			&inventory.LocationID,
-			&inventory.Price,
-			&inventory.DiscountedPrice,
-			&inventory.Stock,
-			&inventory.IsAvailable,
-			&inventory.CreatedAt,
-			&inventory.UpdatedAt,
+			&product.ID,
+			&product.CategoryID,
+			&product.Name,
+			&product.Description,
+			&product.Unit,
+			&product.IsAvailable,
+			&product.IsActive,
+			&product.Tags,
+			&product.CreatedAt,
+			&product.UpdatedAt,
 		)
 
 		if err != nil {
 			return nil, err
 		}
 
-		inventories = append(inventories, inventory)
+		products = append(products, product)
 	}
 
-	return inventories, nil
+	return products, nil
 }
