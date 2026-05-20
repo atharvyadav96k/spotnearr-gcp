@@ -28,6 +28,14 @@ type UserFollowBusiness struct {
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
+type UserFollowUser struct {
+	FollowerID uuid.UUID `db:"follower_id" json:"follower_id"`
+
+	FollowingID uuid.UUID `db:"following_id" json:"following_id"`
+
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+}
+
 type UserSavedProduct struct {
 	UserID uuid.UUID `db:"user_id" json:"user_id"`
 
