@@ -44,6 +44,12 @@ type UserSavedProduct struct {
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
+type UserLikedProduct struct {
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	ProductID uuid.UUID `db:"product_id" json:"product_id"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+}
+
 type BusinessReview struct {
 	ID uuid.UUID `db:"id" json:"id"`
 

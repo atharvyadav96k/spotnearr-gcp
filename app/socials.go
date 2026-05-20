@@ -7,6 +7,66 @@ import (
 	"github.com/google/uuid"
 )
 
+func (a *App) FollowBusiness(userID, businessID uuid.UUID) error {
+	query := `INSERT INTO user_follow_businesses (user_id, business_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`
+	_, err := a.GetDB().Exec(context.Background(), query, userID, businessID)
+	return err
+}
+
+func (a *App) UnfollowBusiness(userID, businessID uuid.UUID) error {
+	query := `DELETE FROM user_follow_businesses WHERE user_id = $1 AND business_id = $2`
+	_, err := a.GetDB().Exec(context.Background(), query, userID, businessID)
+	return err
+}
+
+func (a *App) GetFollowingBusinesses(userID uuid.UUID) ([]models.UserFollowBusiness, error) {
+	query := `SELECT user_id, business_id, created_at FROM user_follow_businesses WHERE user_id = $1 ORDER BY created_at DESC`
+	rows, err := a.GetDB().Query(context.Background(), query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var follows []models.UserFollowBusiness
+	for rows.Next() {
+		var f models.UserFollowBusiness
+		if err := rows.Scan(&f.UserID, &f.BusinessID, &f.CreatedAt); err != nil {
+			return nil, err
+		}
+		follows = append(follows, f)
+	}
+	return follows, rows.Err()
+}
+
+func (a *App) LikeProduct(userID, productID uuid.UUID) error {
+	query := `INSERT INTO user_liked_products (user_id, product_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`
+	_, err := a.GetDB().Exec(context.Background(), query, userID, productID)
+	return err
+}
+
+func (a *App) UnlikeProduct(userID, productID uuid.UUID) error {
+	query := `DELETE FROM user_liked_products WHERE user_id = $1 AND product_id = $2`
+	_, err := a.GetDB().Exec(context.Background(), query, userID, productID)
+	return err
+}
+
+func (a *App) GetLikedProducts(userID uuid.UUID) ([]models.UserLikedProduct, error) {
+	query := `SELECT user_id, product_id, created_at FROM user_liked_products WHERE user_id = $1 ORDER BY created_at DESC`
+	rows, err := a.GetDB().Query(context.Background(), query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var likes []models.UserLikedProduct
+	for rows.Next() {
+		var l models.UserLikedProduct
+		if err := rows.Scan(&l.UserID, &l.ProductID, &l.CreatedAt); err != nil {
+			return nil, err
+		}
+		likes = append(likes, l)
+	}
+	return likes, rows.Err()
+}
+
 func (a *App) FollowUser(followerID, followingID uuid.UUID) error {
 	query := `INSERT INTO user_follow_users (follower_id, following_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`
 	_, err := a.GetDB().Exec(context.Background(), query, followerID, followingID)
