@@ -1,8 +1,10 @@
 package models
 
 import (
+	"strings"
 	"time"
 
+	"github.com/atharvyadav96k/spotnearr-gcp/app/utils"
 	"github.com/google/uuid"
 )
 
@@ -116,6 +118,29 @@ type SpotlightResponse struct {
 	CreatedAt    time.Time          `json:"created_at"`
 }
 
+func (s Spotlight) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if s.BusinessID == (uuid.UUID{}) {
+		ve.Add("business_id", "business_id is required")
+	}
+	if s.Type == "" {
+		ve.Add("type", "type is required (product|offer|general)")
+	}
+	if strings.TrimSpace(s.Title) == "" {
+		ve.Add("title", "title is required")
+	}
+	if strings.TrimSpace(s.MediaURL) == "" {
+		ve.Add("media_url", "media_url is required")
+	}
+	if s.MediaType == "" {
+		ve.Add("media_type", "media_type is required (image|video)")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
+}
+
 func (s Spotlight) ToResponse() any {
 	return SpotlightResponse{
 		ID: s.ID, BusinessID: s.BusinessID, Type: s.Type, Status: s.Status,
@@ -156,6 +181,23 @@ type SpotlightCommentResponse struct {
 	ParentID    *uuid.UUID `json:"parent_id,omitempty"`
 	Content     string     `json:"content"`
 	CreatedAt   time.Time  `json:"created_at"`
+}
+
+func (c SpotlightComment) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if c.SpotlightID == (uuid.UUID{}) {
+		ve.Add("spotlight_id", "spotlight_id is required")
+	}
+	if c.UserID == (uuid.UUID{}) {
+		ve.Add("user_id", "user_id is required")
+	}
+	if strings.TrimSpace(c.Content) == "" {
+		ve.Add("content", "content is required")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
 }
 
 func (c SpotlightComment) ToResponse() any {

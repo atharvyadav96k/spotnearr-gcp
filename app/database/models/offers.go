@@ -1,8 +1,10 @@
 package models
 
 import (
+	"strings"
 	"time"
 
+	"github.com/atharvyadav96k/spotnearr-gcp/app/utils"
 	"github.com/google/uuid"
 )
 
@@ -63,6 +65,32 @@ type OfferResponse struct {
 	StartsAt      time.Time         `json:"starts_at"`
 	ExpiresAt     time.Time         `json:"expires_at"`
 	CreatedAt     time.Time         `json:"created_at"`
+}
+
+func (o Offer) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if o.BusinessID == (uuid.UUID{}) {
+		ve.Add("business_id", "business_id is required")
+	}
+	if strings.TrimSpace(o.Title) == "" {
+		ve.Add("title", "title is required")
+	}
+	if o.DiscountType == "" {
+		ve.Add("discount_type", "discount_type is required (percentage|flat)")
+	}
+	if o.DiscountValue <= 0 {
+		ve.Add("discount_value", "discount_value must be greater than 0")
+	}
+	if o.StartsAt.IsZero() {
+		ve.Add("starts_at", "starts_at is required")
+	}
+	if o.ExpiresAt.IsZero() {
+		ve.Add("expires_at", "expires_at is required")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
 }
 
 func (o Offer) ToResponse() any {

@@ -1,8 +1,10 @@
 package models
 
 import (
+	"strings"
 	"time"
 
+	"github.com/atharvyadav96k/spotnearr-gcp/app/utils"
 	"github.com/google/uuid"
 )
 
@@ -120,6 +122,55 @@ type BusinessLocationResponse struct {
 	ClosingTime  string    `json:"closing_time"`
 	WorkingDays  []string  `json:"working_days"`
 	CreatedAt    time.Time `json:"created_at"`
+}
+
+func (b Business) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if strings.TrimSpace(b.Name) == "" {
+		ve.Add("name", "name is required")
+	}
+	if b.CategoryID == (uuid.UUID{}) {
+		ve.Add("category_id", "category_id is required")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
+}
+
+func (l BusinessLocation) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if l.BusinessID == (uuid.UUID{}) {
+		ve.Add("business_id", "business_id is required")
+	}
+	if strings.TrimSpace(l.BranchName) == "" {
+		ve.Add("branch_name", "branch_name is required")
+	}
+	if strings.TrimSpace(l.AddressLine1) == "" {
+		ve.Add("address_line1", "address_line1 is required")
+	}
+	if strings.TrimSpace(l.City) == "" {
+		ve.Add("city", "city is required")
+	}
+	if strings.TrimSpace(l.State) == "" {
+		ve.Add("state", "state is required")
+	}
+	if strings.TrimSpace(l.PinCode) == "" {
+		ve.Add("pin_code", "pin_code is required")
+	}
+	if strings.TrimSpace(l.OpeningTime) == "" {
+		ve.Add("opening_time", "opening_time is required")
+	}
+	if strings.TrimSpace(l.ClosingTime) == "" {
+		ve.Add("closing_time", "closing_time is required")
+	}
+	if len(l.WorkingDays) == 0 {
+		ve.Add("working_days", "at least one working day is required")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
 }
 
 func (b BusinessLocation) ToResponse() any {

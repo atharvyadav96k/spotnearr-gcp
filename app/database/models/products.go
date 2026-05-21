@@ -1,8 +1,10 @@
 package models
 
 import (
+	"strings"
 	"time"
 
+	"github.com/atharvyadav96k/spotnearr-gcp/app/utils"
 	"github.com/google/uuid"
 )
 
@@ -92,6 +94,23 @@ type ProductResponse struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+func (p Product) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if p.CategoryID == (uuid.UUID{}) {
+		ve.Add("category_id", "category_id is required")
+	}
+	if strings.TrimSpace(p.Name) == "" {
+		ve.Add("name", "name is required")
+	}
+	if strings.TrimSpace(p.Unit) == "" {
+		ve.Add("unit", "unit is required")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
+}
+
 func (p Product) ToResponse() any {
 	return ProductResponse{
 		ID: p.ID, CategoryID: p.CategoryID, Name: p.Name, Description: p.Description,
@@ -109,6 +128,23 @@ type ProductInventoryResponse struct {
 	Stock           int       `json:"stock"`
 	IsAvailable     bool      `json:"is_available"`
 	CreatedAt       time.Time `json:"created_at"`
+}
+
+func (p ProductInventory) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if p.ProductID == (uuid.UUID{}) {
+		ve.Add("product_id", "product_id is required")
+	}
+	if p.LocationID == (uuid.UUID{}) {
+		ve.Add("location_id", "location_id is required")
+	}
+	if p.Price <= 0 {
+		ve.Add("price", "price must be greater than 0")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
 }
 
 func (p ProductInventory) ToResponse() any {

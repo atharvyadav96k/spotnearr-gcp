@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/atharvyadav96k/spotnearr-gcp/app/utils"
 	"github.com/google/uuid"
 )
 
@@ -91,6 +92,20 @@ type FollowBusinessResponse struct {
 	CreatedAt  time.Time `json:"created_at"`
 }
 
+func (f UserFollowBusiness) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if f.UserID == (uuid.UUID{}) {
+		ve.Add("user_id", "user_id is required")
+	}
+	if f.BusinessID == (uuid.UUID{}) {
+		ve.Add("business_id", "business_id is required")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
+}
+
 func (f UserFollowBusiness) ToResponse() any {
 	return FollowBusinessResponse{BusinessID: f.BusinessID, CreatedAt: f.CreatedAt}
 }
@@ -99,6 +114,20 @@ type UserFollowResponse struct {
 	FollowerID  uuid.UUID `json:"follower_id"`
 	FollowingID uuid.UUID `json:"following_id"`
 	CreatedAt   time.Time `json:"created_at"`
+}
+
+func (f UserFollowUser) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if f.FollowerID == (uuid.UUID{}) {
+		ve.Add("follower_id", "follower_id is required")
+	}
+	if f.FollowingID == (uuid.UUID{}) {
+		ve.Add("following_id", "following_id is required")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
 }
 
 func (f UserFollowUser) ToResponse() any {
@@ -110,6 +139,20 @@ type SavedProductResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+func (s UserSavedProduct) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if s.UserID == (uuid.UUID{}) {
+		ve.Add("user_id", "user_id is required")
+	}
+	if s.ProductID == (uuid.UUID{}) {
+		ve.Add("product_id", "product_id is required")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
+}
+
 func (s UserSavedProduct) ToResponse() any {
 	return SavedProductResponse{ProductID: s.ProductID, CreatedAt: s.CreatedAt}
 }
@@ -117,6 +160,20 @@ func (s UserSavedProduct) ToResponse() any {
 type LikedProductResponse struct {
 	ProductID uuid.UUID `json:"product_id"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+func (l UserLikedProduct) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if l.UserID == (uuid.UUID{}) {
+		ve.Add("user_id", "user_id is required")
+	}
+	if l.ProductID == (uuid.UUID{}) {
+		ve.Add("product_id", "product_id is required")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
 }
 
 func (l UserLikedProduct) ToResponse() any {
