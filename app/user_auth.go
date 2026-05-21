@@ -7,10 +7,15 @@ import (
 	"github.com/google/uuid"
 )
 
-func (a *App) RegisterUser(user models.User) error {
-	query := `INSERT INTO users (full_name, email, phone, password_hash, role) VALUES ($1, $2, $3, $4, $5)`
-	_, err := a.GetDB().Exec(context.Background(), query, user.FullName, user.Email, user.Phone, user.PasswordHash, user.Role)
-	return err
+func (a *App) RegisterUser(user models.User) (*models.User, error) {
+	query := `INSERT INTO users (full_name, email, phone, password_hash, role, is_verified) VALUES ($1, $2, $3, $4, $5, true) RETURNING id, is_verified, created_at, updated_at`
+	err := a.GetDB().QueryRow(context.Background(), query, user.FullName, user.Email, user.Phone, user.PasswordHash, user.Role).Scan(
+		&user.ID, &user.IsVerified, &user.CreatedAt, &user.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (a *App) IsUserVerified(userID string) (bool, error) {
