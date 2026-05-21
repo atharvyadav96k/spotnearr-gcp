@@ -66,3 +66,69 @@ type BusinessLocation struct {
 
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
+
+type BusinessResponse struct {
+	ID           uuid.UUID      `json:"id"`
+	OwnerID      uuid.UUID      `json:"owner_id"`
+	Name         string         `json:"name"`
+	Description  *string        `json:"description,omitempty"`
+	CategoryID   uuid.UUID      `json:"category_id"`
+	Email        *string        `json:"email,omitempty"`
+	Phone        *string        `json:"phone,omitempty"`
+	Website      *string        `json:"website,omitempty"`
+	LogoURL      *string        `json:"logo_url,omitempty"`
+	CoverURL     *string        `json:"cover_url,omitempty"`
+	Status       BusinessStatus `json:"status"`
+	IsVerified   bool           `json:"is_verified"`
+	Rating       float64        `json:"rating"`
+	TotalReviews int            `json:"total_reviews"`
+	CreatedAt    time.Time      `json:"created_at"`
+}
+
+func (b Business) ToResponse() any {
+	return BusinessResponse{
+		ID: b.ID, OwnerID: b.OwnerID, Name: b.Name, Description: b.Description,
+		CategoryID: b.CategoryID, Email: b.Email, Phone: b.Phone, Website: b.Website,
+		LogoURL: b.LogoURL, CoverURL: b.CoverURL, Status: b.Status, IsVerified: b.IsVerified,
+		Rating: b.Rating, TotalReviews: b.TotalReviews, CreatedAt: b.CreatedAt,
+	}
+}
+
+type BusinessCategoryResponse struct {
+	ID      uuid.UUID `json:"id"`
+	Name    string    `json:"name"`
+	IconURL *string   `json:"icon_url,omitempty"`
+}
+
+func (b BusinessCategory) ToResponse() any {
+	return BusinessCategoryResponse{ID: b.ID, Name: b.Name, IconURL: b.IconURL}
+}
+
+type BusinessLocationResponse struct {
+	ID           uuid.UUID `json:"id"`
+	BusinessID   uuid.UUID `json:"business_id"`
+	BranchName   string    `json:"branch_name"`
+	AddressLine1 string    `json:"address_line1"`
+	AddressLine2 *string   `json:"address_line2,omitempty"`
+	City         string    `json:"city"`
+	State        string    `json:"state"`
+	PinCode      string    `json:"pin_code"`
+	Latitude     float64   `json:"latitude"`
+	Longitude    float64   `json:"longitude"`
+	IsMain       bool      `json:"is_main"`
+	OpeningTime  string    `json:"opening_time"`
+	ClosingTime  string    `json:"closing_time"`
+	WorkingDays  []string  `json:"working_days"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+func (b BusinessLocation) ToResponse() any {
+	return BusinessLocationResponse{
+		ID: b.ID, BusinessID: b.BusinessID, BranchName: b.BranchName,
+		AddressLine1: b.AddressLine1, AddressLine2: b.AddressLine2,
+		City: b.City, State: b.State, PinCode: b.PinCode,
+		Latitude: b.Latitude, Longitude: b.Longitude,
+		IsMain: b.IsMain, OpeningTime: b.OpeningTime, ClosingTime: b.ClosingTime,
+		WorkingDays: b.WorkingDays, CreatedAt: b.CreatedAt,
+	}
+}

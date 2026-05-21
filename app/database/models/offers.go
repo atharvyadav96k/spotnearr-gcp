@@ -48,3 +48,37 @@ type OfferProduct struct {
 
 	ProductID uuid.UUID `db:"product_id" json:"product_id"`
 }
+
+type OfferResponse struct {
+	ID            uuid.UUID         `json:"id"`
+	BusinessID    uuid.UUID         `json:"business_id"`
+	Title         string            `json:"title"`
+	Description   *string           `json:"description,omitempty"`
+	DiscountType  OfferDiscountType `json:"discount_type"`
+	DiscountValue int64             `json:"discount_value"`
+	MinOrderValue int64             `json:"min_order_value"`
+	CouponCode    *string           `json:"coupon_code,omitempty"`
+	BannerURL     *string           `json:"banner_url,omitempty"`
+	IsActive      bool              `json:"is_active"`
+	StartsAt      time.Time         `json:"starts_at"`
+	ExpiresAt     time.Time         `json:"expires_at"`
+	CreatedAt     time.Time         `json:"created_at"`
+}
+
+func (o Offer) ToResponse() any {
+	return OfferResponse{
+		ID: o.ID, BusinessID: o.BusinessID, Title: o.Title, Description: o.Description,
+		DiscountType: o.DiscountType, DiscountValue: o.DiscountValue, MinOrderValue: o.MinOrderValue,
+		CouponCode: o.CouponCode, BannerURL: o.BannerURL, IsActive: o.IsActive,
+		StartsAt: o.StartsAt, ExpiresAt: o.ExpiresAt, CreatedAt: o.CreatedAt,
+	}
+}
+
+type OfferProductResponse struct {
+	OfferID   uuid.UUID `json:"offer_id"`
+	ProductID uuid.UUID `json:"product_id"`
+}
+
+func (o OfferProduct) ToResponse() any {
+	return OfferProductResponse{OfferID: o.OfferID, ProductID: o.ProductID}
+}

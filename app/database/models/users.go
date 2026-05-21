@@ -36,3 +36,25 @@ type User struct {
 
 	DeletedAt *time.Time `db:"deleted_at" json:"-"`
 }
+
+type UserResponse struct {
+	ID         uuid.UUID `json:"id"`
+	FullName   string    `json:"full_name"`
+	Email      *string   `json:"email,omitempty"`
+	Phone      *string   `json:"phone,omitempty"`
+	Role       UserRole  `json:"role"`
+	AvatarURL  *string   `json:"avatar_url,omitempty"`
+	IsVerified bool      `json:"is_verified"`
+}
+
+func (u User) ToResponse() any {
+	return UserResponse{
+		ID:         u.ID,
+		FullName:   u.FullName,
+		Email:      u.Email,
+		Phone:      u.Phone,
+		Role:       u.Role,
+		AvatarURL:  u.AvatarURL,
+		IsVerified: u.IsVerified,
+	}
+}

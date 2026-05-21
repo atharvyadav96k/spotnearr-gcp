@@ -95,3 +95,72 @@ type SpotlightComment struct {
 
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
+
+type SpotlightResponse struct {
+	ID           uuid.UUID          `json:"id"`
+	BusinessID   uuid.UUID          `json:"business_id"`
+	Type         SpotlightType      `json:"type"`
+	Status       SpotlightStatus    `json:"status"`
+	Title        string             `json:"title"`
+	Description  *string            `json:"description,omitempty"`
+	MediaURL     string             `json:"media_url"`
+	MediaType    SpotlightMediaType `json:"media_type"`
+	ThumbnailURL *string            `json:"thumbnail_url,omitempty"`
+	ProductID    *uuid.UUID         `json:"product_id,omitempty"`
+	OfferID      *uuid.UUID         `json:"offer_id,omitempty"`
+	ViewCount    int                `json:"view_count"`
+	LikeCount    int                `json:"like_count"`
+	ShareCount   int                `json:"share_count"`
+	CommentCount int                `json:"comment_count"`
+	ExpiresAt    *time.Time         `json:"expires_at,omitempty"`
+	CreatedAt    time.Time          `json:"created_at"`
+}
+
+func (s Spotlight) ToResponse() any {
+	return SpotlightResponse{
+		ID: s.ID, BusinessID: s.BusinessID, Type: s.Type, Status: s.Status,
+		Title: s.Title, Description: s.Description, MediaURL: s.MediaURL, MediaType: s.MediaType,
+		ThumbnailURL: s.ThumbnailURL, ProductID: s.ProductID, OfferID: s.OfferID,
+		ViewCount: s.ViewCount, LikeCount: s.LikeCount, ShareCount: s.ShareCount,
+		CommentCount: s.CommentCount, ExpiresAt: s.ExpiresAt, CreatedAt: s.CreatedAt,
+	}
+}
+
+type SpotlightFeedItemResponse struct {
+	ID          uuid.UUID  `json:"id"`
+	SpotlightID uuid.UUID  `json:"spotlight_id"`
+	IsSeen      bool       `json:"is_seen"`
+	SeenAt      *time.Time `json:"seen_at,omitempty"`
+	CreatedAt   time.Time  `json:"created_at"`
+}
+
+func (s SpotlightFeedItem) ToResponse() any {
+	return SpotlightFeedItemResponse{ID: s.ID, SpotlightID: s.SpotlightID, IsSeen: s.IsSeen, SeenAt: s.SeenAt, CreatedAt: s.CreatedAt}
+}
+
+type SpotlightInteractionResponse struct {
+	ID          uuid.UUID                `json:"id"`
+	SpotlightID uuid.UUID                `json:"spotlight_id"`
+	Type        SpotlightInteractionType `json:"type"`
+	CreatedAt   time.Time                `json:"created_at"`
+}
+
+func (s SpotlightInteraction) ToResponse() any {
+	return SpotlightInteractionResponse{ID: s.ID, SpotlightID: s.SpotlightID, Type: s.Type, CreatedAt: s.CreatedAt}
+}
+
+type SpotlightCommentResponse struct {
+	ID          uuid.UUID  `json:"id"`
+	SpotlightID uuid.UUID  `json:"spotlight_id"`
+	UserID      uuid.UUID  `json:"user_id"`
+	ParentID    *uuid.UUID `json:"parent_id,omitempty"`
+	Content     string     `json:"content"`
+	CreatedAt   time.Time  `json:"created_at"`
+}
+
+func (c SpotlightComment) ToResponse() any {
+	return SpotlightCommentResponse{
+		ID: c.ID, SpotlightID: c.SpotlightID, UserID: c.UserID,
+		ParentID: c.ParentID, Content: c.Content, CreatedAt: c.CreatedAt,
+	}
+}

@@ -85,3 +85,75 @@ type Notification struct {
 
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
+
+type FollowBusinessResponse struct {
+	BusinessID uuid.UUID `json:"business_id"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+func (f UserFollowBusiness) ToResponse() any {
+	return FollowBusinessResponse{BusinessID: f.BusinessID, CreatedAt: f.CreatedAt}
+}
+
+type UserFollowResponse struct {
+	FollowerID  uuid.UUID `json:"follower_id"`
+	FollowingID uuid.UUID `json:"following_id"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+func (f UserFollowUser) ToResponse() any {
+	return UserFollowResponse{FollowerID: f.FollowerID, FollowingID: f.FollowingID, CreatedAt: f.CreatedAt}
+}
+
+type SavedProductResponse struct {
+	ProductID uuid.UUID `json:"product_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (s UserSavedProduct) ToResponse() any {
+	return SavedProductResponse{ProductID: s.ProductID, CreatedAt: s.CreatedAt}
+}
+
+type LikedProductResponse struct {
+	ProductID uuid.UUID `json:"product_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (l UserLikedProduct) ToResponse() any {
+	return LikedProductResponse{ProductID: l.ProductID, CreatedAt: l.CreatedAt}
+}
+
+type ReviewResponse struct {
+	ID         uuid.UUID `json:"id"`
+	BusinessID uuid.UUID `json:"business_id"`
+	UserID     uuid.UUID `json:"user_id"`
+	Rating     int       `json:"rating"`
+	Comment    *string   `json:"comment,omitempty"`
+	IsVerified bool      `json:"is_verified"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+func (r BusinessReview) ToResponse() any {
+	return ReviewResponse{
+		ID: r.ID, BusinessID: r.BusinessID, UserID: r.UserID,
+		Rating: r.Rating, Comment: r.Comment, IsVerified: r.IsVerified, CreatedAt: r.CreatedAt,
+	}
+}
+
+type NotificationResponse struct {
+	ID        uuid.UUID            `json:"id"`
+	Type      NotificationType     `json:"type"`
+	Title     string               `json:"title"`
+	Body      *string              `json:"body,omitempty"`
+	RefID     *uuid.UUID           `json:"ref_id,omitempty"`
+	RefType   *NotificationRefType `json:"ref_type,omitempty"`
+	IsRead    bool                 `json:"is_read"`
+	CreatedAt time.Time            `json:"created_at"`
+}
+
+func (n Notification) ToResponse() any {
+	return NotificationResponse{
+		ID: n.ID, Type: n.Type, Title: n.Title, Body: n.Body,
+		RefID: n.RefID, RefType: n.RefType, IsRead: n.IsRead, CreatedAt: n.CreatedAt,
+	}
+}

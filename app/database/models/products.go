@@ -79,3 +79,75 @@ type ProductMedia struct {
 
 	SortOrder int `db:"sort_order" json:"sort_order"`
 }
+
+type ProductResponse struct {
+	ID          uuid.UUID `json:"id"`
+	CategoryID  uuid.UUID `json:"category_id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description,omitempty"`
+	Unit        string    `json:"unit"`
+	IsAvailable bool      `json:"is_available"`
+	IsActive    bool      `json:"is_active"`
+	Tags        []string  `json:"tags"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+func (p Product) ToResponse() any {
+	return ProductResponse{
+		ID: p.ID, CategoryID: p.CategoryID, Name: p.Name, Description: p.Description,
+		Unit: p.Unit, IsAvailable: p.IsAvailable, IsActive: p.IsActive,
+		Tags: p.Tags, CreatedAt: p.CreatedAt,
+	}
+}
+
+type ProductInventoryResponse struct {
+	ID              uuid.UUID `json:"id"`
+	ProductID       uuid.UUID `json:"product_id"`
+	LocationID      uuid.UUID `json:"location_id"`
+	Price           int64     `json:"price"`
+	DiscountedPrice int64     `json:"discounted_price"`
+	Stock           int       `json:"stock"`
+	IsAvailable     bool      `json:"is_available"`
+	CreatedAt       time.Time `json:"created_at"`
+}
+
+func (p ProductInventory) ToResponse() any {
+	return ProductInventoryResponse{
+		ID: p.ID, ProductID: p.ProductID, LocationID: p.LocationID,
+		Price: p.Price, DiscountedPrice: p.DiscountedPrice, Stock: p.Stock,
+		IsAvailable: p.IsAvailable, CreatedAt: p.CreatedAt,
+	}
+}
+
+type ProductCategoryResponse struct {
+	ID       uuid.UUID  `json:"id"`
+	Name     string     `json:"name"`
+	ParentID *uuid.UUID `json:"parent_id,omitempty"`
+	IconURL  *string    `json:"icon_url,omitempty"`
+}
+
+func (p ProductCategory) ToResponse() any {
+	return ProductCategoryResponse{ID: p.ID, Name: p.Name, ParentID: p.ParentID, IconURL: p.IconURL}
+}
+
+type MediaResponse struct {
+	ID           uuid.UUID `json:"id"`
+	URL          string    `json:"url"`
+	Type         string    `json:"type"`
+	ThumbnailURL *string   `json:"thumbnail_url,omitempty"`
+}
+
+func (m Media) ToResponse() any {
+	return MediaResponse{ID: m.ID, URL: m.URL, Type: m.Type, ThumbnailURL: m.ThumbnailURL}
+}
+
+type ProductMediaResponse struct {
+	ProductID uuid.UUID `json:"product_id"`
+	MediaID   uuid.UUID `json:"media_id"`
+	IsPrimary bool      `json:"is_primary"`
+	SortOrder int       `json:"sort_order"`
+}
+
+func (p ProductMedia) ToResponse() any {
+	return ProductMediaResponse{ProductID: p.ProductID, MediaID: p.MediaID, IsPrimary: p.IsPrimary, SortOrder: p.SortOrder}
+}
