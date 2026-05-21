@@ -9,6 +9,17 @@ import (
 	"github.com/google/uuid"
 )
 
+func (a *App) CreateProductCategory(name string) (*models.ProductCategory, error) {
+	query := `INSERT INTO product_categories (name) VALUES ($1) RETURNING id, created_at`
+	var cat models.ProductCategory
+	cat.Name = name
+	err := a.GetDB().QueryRow(context.Background(), query, name).Scan(&cat.ID, &cat.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &cat, nil
+}
+
 func (a *App) CreateProduct(product models.Product) (*models.Product, error) {
 	query := `INSERT INTO products (category_id, name, description, unit, is_available, is_active, tags) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at, updated_at`
 
