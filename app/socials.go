@@ -163,6 +163,24 @@ func (a *App) GetSavedProducts(userID uuid.UUID) ([]models.UserSavedProduct, err
 	return saved, nil
 }
 
+func (a *App) GetLikedBusinesses(userID uuid.UUID) ([]models.UserLikedBusiness, error) {
+	query := `SELECT user_id, business_id, created_at FROM user_liked_businesses WHERE user_id = $1 ORDER BY created_at DESC`
+	rows, err := a.GetDB().Query(context.Background(), query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var likes []models.UserLikedBusiness
+	for rows.Next() {
+		var l models.UserLikedBusiness
+		if err := rows.Scan(&l.UserID, &l.BusinessID, &l.CreatedAt); err != nil {
+			return nil, err
+		}
+		likes = append(likes, l)
+	}
+	return likes, rows.Err()
+}
+
 func (a *App) GetSavedSpotlightsByUserID(userID uuid.UUID) ([]models.Spotlight, error) {
 	query := `
 		SELECT s.id, s.business_id, s.type, s.status, s.title, s.description,

@@ -219,6 +219,23 @@ type ReviewResponse struct {
 	CreatedAt  time.Time `json:"created_at"`
 }
 
+func (r BusinessReview) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if r.BusinessID == (uuid.UUID{}) {
+		ve.Add("business_id", "business_id is required")
+	}
+	if r.UserID == (uuid.UUID{}) {
+		ve.Add("user_id", "user_id is required")
+	}
+	if r.Rating < 1 || r.Rating > 5 {
+		ve.Add("rating", "rating must be between 1 and 5")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
+}
+
 func (r BusinessReview) ToResponse() any {
 	return ReviewResponse{
 		ID: r.ID, BusinessID: r.BusinessID, UserID: r.UserID,
