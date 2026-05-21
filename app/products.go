@@ -191,6 +191,25 @@ func (a *App) AttachMediaToProduct(productMedia models.ProductMedia) error {
 	return err
 }
 
+func (a *App) SearchProducts(query string) ([]models.Product, error) {
+	sql := `SELECT id, category_id, name, description, unit, is_available, is_active, tags, created_at, updated_at FROM products WHERE is_active = true AND (name ILIKE '%' || $1 || '%' OR description ILIKE '%' || $1 || '%') ORDER BY created_at DESC`
+	rows, err := a.GetDB().Query(context.Background(), sql, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var products []models.Product
+	for rows.Next() {
+		var p models.Product
+		if err := rows.Scan(&p.ID, &p.CategoryID, &p.Name, &p.Description, &p.Unit, &p.IsAvailable, &p.IsActive, &p.Tags, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			return nil, err
+		}
+		products = append(products, p)
+	}
+	return products, rows.Err()
+}
+
 func (a *App) GetNearbyProducts(latitude float64, longitude float64, density int) ([]models.Product, error) {
 	radius := float64(density * 3)
 

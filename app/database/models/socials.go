@@ -51,6 +51,35 @@ type UserLikedProduct struct {
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
+type UserLikedBusiness struct {
+	UserID     uuid.UUID `db:"user_id" json:"user_id"`
+	BusinessID uuid.UUID `db:"business_id" json:"business_id"`
+	CreatedAt  time.Time `db:"created_at" json:"created_at"`
+}
+
+type LikedBusinessResponse struct {
+	BusinessID uuid.UUID `json:"business_id"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+func (l UserLikedBusiness) Validate() error {
+	ve := &utils.ValidationErrors{}
+	if l.UserID == (uuid.UUID{}) {
+		ve.Add("user_id", "user_id is required")
+	}
+	if l.BusinessID == (uuid.UUID{}) {
+		ve.Add("business_id", "business_id is required")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
+}
+
+func (l UserLikedBusiness) ToResponse() any {
+	return LikedBusinessResponse{BusinessID: l.BusinessID, CreatedAt: l.CreatedAt}
+}
+
 type BusinessReview struct {
 	ID uuid.UUID `db:"id" json:"id"`
 

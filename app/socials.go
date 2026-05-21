@@ -7,6 +7,18 @@ import (
 	"github.com/google/uuid"
 )
 
+func (a *App) LikeBusiness(userID, businessID uuid.UUID) error {
+	query := `INSERT INTO user_liked_businesses (user_id, business_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`
+	_, err := a.GetDB().Exec(context.Background(), query, userID, businessID)
+	return err
+}
+
+func (a *App) UnlikeBusiness(userID, businessID uuid.UUID) error {
+	query := `DELETE FROM user_liked_businesses WHERE user_id = $1 AND business_id = $2`
+	_, err := a.GetDB().Exec(context.Background(), query, userID, businessID)
+	return err
+}
+
 func (a *App) FollowBusiness(userID, businessID uuid.UUID) error {
 	query := `INSERT INTO user_follow_businesses (user_id, business_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`
 	_, err := a.GetDB().Exec(context.Background(), query, userID, businessID)
